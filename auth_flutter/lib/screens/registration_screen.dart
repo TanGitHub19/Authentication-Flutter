@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:auth_flutter/bloc/auth_bloc.dart';
 import 'package:auth_flutter/bloc/auth_event.dart';
+import 'package:auth_flutter/bloc/auth_state.dart';
 import 'package:auth_flutter/models/user_model.dart';
+import 'package:auth_flutter/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -18,6 +23,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController contactNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  File? _profilePicture;
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _profilePicture = File(image.path);
+      });
+    }
+  }
+
+  Future<String?> _convertFileToBase64(File? file) async {
+    if (file == null) return null;
+    final bytes = await file.readAsBytes();
+    return 'data:image/png;base64,${base64Encode(bytes)}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,29 +53,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: const AssetImage('assets/profile_image.png'),
+                  backgroundImage: _profilePicture != null
+                      ? FileImage(_profilePicture!)
+                      : const AssetImage('assets/default_profile.png')
+                          as ImageProvider,
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.camera_alt, color: Colors.white),
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.camera_alt, color: Colors.white,),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 const Text(
                   'Hello User!',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 5,
                 ),
                 const Text(
                   'Create your account!',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -196,23 +221,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             final fullname = nameController.text;
                             final username = usernameController.text;
                             final email = emailController.text;
                             final contactNumber = contactNumberController.text;
                             final password = passwordController.text;
-        
+
+                            final authBloc = BlocProvider.of<AuthBloc>(context);
+
+                            final profilePictureBase64 = _profilePicture != null
+                                ? await _convertFileToBase64(_profilePicture!)
+                                : null;
+
                             final user = User(
+                              profilePicture: profilePictureBase64,
                               fullname: fullname,
                               username: username,
                               email: email,
                               contactNumber: contactNumber,
                               password: password,
                             );
-        
-                            BlocProvider.of<AuthBloc>(context)
-                                .add(UserRegistration(user));
+
+                            if (mounted) {
+                              authBloc
+                                  .add(UserRegistration(user, _profilePicture));
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepPurple,
@@ -231,7 +265,34 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     );
                   },
-                )
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Already have an account?",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color.fromARGB(255, 131, 126, 126)),
+                    ), 
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        'Sign In',
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w800,
+                            decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
