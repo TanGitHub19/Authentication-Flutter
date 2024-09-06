@@ -4,7 +4,7 @@ import 'package:auth_flutter/models/user_model.dart';
 import 'package:auth_flutter/repositories/api_repository.dart';
 import 'package:http/http.dart' as http;
 
-abstract class ApiRepositoryImpl extends ApiRepository {
+class ApiRepositoryImpl extends ApiRepository {
   static const String baseUrl = "http://10.0.2.2:3000/api/";
 
   @override
@@ -37,3 +37,5 @@ abstract class ApiRepositoryImpl extends ApiRepository {
     }
   }
 }
+
+

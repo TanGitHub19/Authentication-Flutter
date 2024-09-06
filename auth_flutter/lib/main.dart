@@ -1,4 +1,7 @@
+import 'package:auth_flutter/bloc/admin/admin_user_bloc.dart';
+import 'package:auth_flutter/bloc/admin/admin_user_event.dart';
 import 'package:auth_flutter/bloc/auth_bloc.dart';
+import 'package:auth_flutter/repositories/api_repository_impl.dart';
 import 'package:auth_flutter/repositories/auth_repository.dart';
 import 'package:auth_flutter/screens/admin_panel_screen.dart';
 import 'package:auth_flutter/screens/dashboard_screen.dart';
@@ -26,7 +29,11 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/dashboard': (context) => const DashboardScreen(),
-        '/admin': (context) => const AdminPanelScreen(),
+        '/admin': (context) => BlocProvider(
+              create: (context) =>
+                  AdminUserBloc(ApiRepositoryImpl())..add(GetUsers()),
+              child: const AdminPanelScreen(),
+            ),
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

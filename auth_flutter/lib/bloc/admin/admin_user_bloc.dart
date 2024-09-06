@@ -3,7 +3,7 @@ import 'package:auth_flutter/bloc/admin/admin_user_state.dart';
 import 'package:auth_flutter/repositories/api_repository.dart';
 import 'package:bloc/bloc.dart';
 
-abstract class AdminUserBloc extends Bloc<AdminUserEvent, AdminUserState> {
+class AdminUserBloc extends Bloc<AdminUserEvent, AdminUserState> {
   final ApiRepository apiRepository;
 
   AdminUserBloc(this.apiRepository) : super(UserDataLoading()) {
