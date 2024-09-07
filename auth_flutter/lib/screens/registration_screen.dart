@@ -61,7 +61,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     alignment: Alignment.bottomRight,
                     child: IconButton(
                       onPressed: _pickImage,
-                      icon: const Icon(Icons.camera_alt, color: Colors.white,),
+                      icon: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -205,8 +208,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   listener: (context, state) {
                     if (state is AuthSucceed) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.message)),
+                        SnackBar(
+                          content: Text(state.message),
+                          behavior: SnackBarBehavior.floating,
+                        ),
                       );
+                      Navigator.pushReplacementNamed(context, '/login');
                     } else if (state is AuthFailed) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(state.error)),
@@ -274,7 +281,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Color.fromARGB(255, 131, 126, 126)),
-                    ), 
+                    ),
                     TextButton(
                       onPressed: () {
                         Navigator.push(

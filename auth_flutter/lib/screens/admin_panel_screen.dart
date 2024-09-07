@@ -12,40 +12,6 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
-  void showDeleteDialog(
-      BuildContext context, String? userName, String? userId) {
-    if (userId == null) {
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete User'),
-          content: Text(
-              'Are you sure you want to delete ${userName ?? 'Unnamed User'}?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete'),
-              onPressed: () {
-                BlocProvider.of<AdminUserBloc>(context).add(DeleteUser(userId));
-                Navigator.of(context)
-                    .pop(); 
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,17 +38,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     radius: 20,
                   ),
                   title: Text(user.fullname),
+                  subtitle: Text(user.email),
                   trailing: Row(
-                    mainAxisSize: MainAxisSize.min, 
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         onPressed: () {
+                          // Edit action here
                         },
                         icon: const Icon(Icons.edit),
                       ),
                       IconButton(
                         onPressed: () {
-                          showDeleteDialog(context, user.fullname, user.id);
+                          showDeleteDialog(context, user.id!);
                         },
                         icon: const Icon(Icons.delete),
                       ),
@@ -98,6 +66,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           }
         },
       ),
+    );
+  }
+
+  void showDeleteDialog(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this user?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              onPressed: () {
+                final bloc = BlocProvider.of<AdminUserBloc>(context);
+                bloc.add(DeleteUser(userId));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

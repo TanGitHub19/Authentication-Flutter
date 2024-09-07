@@ -9,11 +9,11 @@ class ApiRepositoryImpl extends ApiRepository {
 
   @override
   Future<List<User>> getUsers() async {
-    final response = await http.get(Uri.parse('$baseUrl/users'));
+    final response = await http.get(Uri.parse(baseUrl));
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body)['users'];
-      return data.map((json) => User.fromJson(json)).toList();
+      final List<dynamic> jsonData = jsonDecode(response.body);
+      return jsonData.map((json) => User.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load users');
     }
@@ -21,7 +21,7 @@ class ApiRepositoryImpl extends ApiRepository {
 
   @override
   Future<void> deleteUser(String id) async {
-    final response = await http.delete(Uri.parse('$baseUrl/:id'));
+    final response = await http.delete(Uri.parse('$baseUrl$id'));
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete student: ${response.reasonPhrase}');
@@ -30,8 +30,8 @@ class ApiRepositoryImpl extends ApiRepository {
 
   @override
   Future<void> updateUser(String id, User user) async {
-    final response = await http.put(Uri.parse('$baseUrl/:id'),
-        headers: <String, String>{'Content-Type': 'application/json}'});
+    final response = await http.put(Uri.parse('$baseUrl$id'),
+        headers: <String, String>{'Content-Type': 'application/json'});
     if (response.statusCode != 200) {
       throw Exception('Failed to delete student: ${response.reasonPhrase}');
     }
