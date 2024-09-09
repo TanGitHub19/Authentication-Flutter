@@ -15,7 +15,25 @@ class UserDataLoaded extends AdminUserState {
   const UserDataLoaded(this.userdata);
 
   @override
+  List<Object> get props => [userdata];
+}
+
+class UserDataLoadedById extends AdminUserState {
+  final User user;
+
+  const UserDataLoadedById(this.user);
+
+  @override
   List<Object> get props => [];
+}
+
+class UserDataSuccess extends AdminUserState {
+  final String message;
+
+  const UserDataSuccess(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 
 class UserDataError extends AdminUserState {
@@ -26,3 +44,5 @@ class UserDataError extends AdminUserState {
   @override
   List<Object> get props => [message];
 }
+
+

@@ -2,6 +2,8 @@ import 'package:auth_flutter/bloc/auth_bloc.dart';
 import 'package:auth_flutter/bloc/auth_event.dart';
 import 'package:auth_flutter/bloc/auth_state.dart';
 import 'package:auth_flutter/models/user_model.dart';
+import 'package:auth_flutter/screens/admin_panel_screen.dart';
+import 'package:auth_flutter/screens/dashboard_screen.dart';
 import 'package:auth_flutter/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +20,14 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
-   @override
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -27,15 +36,28 @@ class _LoginScreenState extends State<LoginScreen> {
           child: BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
               if (state is AuthSuccessWithRole) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Login Success'),
+                      behavior: SnackBarBehavior.floating),
+                );
                 if (state.role == 'user') {
-                  Navigator.pushReplacementNamed(context, '/dashboard');
-                } else if (state.role == 'admin'){
-                  Navigator.pushReplacementNamed(context, '/admin');
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const DashboardScreen()));
+                } else if (state.role == 'admin' ||
+                    state.role == 'service manager') {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminPanelScreen()));
                 }
               } else if (state is AuthFailed) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.error)),
                 );
+                BlocProvider.of<AuthBloc>(context).add(AuthReset());
               }
             },
             child: Column(

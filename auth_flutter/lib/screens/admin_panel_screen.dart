@@ -1,6 +1,7 @@
-import 'package:auth_flutter/bloc/admin/admin_user_bloc.dart';
-import 'package:auth_flutter/bloc/admin/admin_user_event.dart';
-import 'package:auth_flutter/bloc/admin/admin_user_state.dart';
+import 'package:auth_flutter/bloc/booking/booking_bloc.dart';
+import 'package:auth_flutter/screens/admin_services_screen.dart';
+import 'package:auth_flutter/screens/admin_users_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,88 +13,124 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<BookingBloc>(context).add(GetBooking());
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminUsersScreen(),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminServicesScreen(),
+          ),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Panel'),
+        automaticallyImplyLeading: false,
       ),
-      body: BlocBuilder<AdminUserBloc, AdminUserState>(
+      body: BlocBuilder<BookingBloc, BookingState>(
         builder: (context, state) {
-          if (state is UserDataLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is UserDataLoaded) {
-            return ListView.builder(
-              itemCount: state.userdata.length,
-              itemBuilder: (context, index) {
-                final user = state.userdata[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: user.profilePicture != null
-                        ? NetworkImage(user.profilePicture!)
-                        : const AssetImage('assets/default_profile.png')
-                            as ImageProvider,
-                    radius: 20,
+          if (state is RequestLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is RequestError) {
+            return Center(child: Text(state.error));
+          } else if (state is RequestLoaded) {
+            final bookings = state.bookings;
+            return Column(
+              children: [
+                Container(
+                  width: 370,
+                  height: 180,
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  title: Text(user.fullname),
-                  subtitle: Text(user.email),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          // Edit action here
-                        },
-                        icon: const Icon(Icons.edit),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          showDeleteDialog(context, user.id!);
-                        },
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
+                  child: const Text(
+                    'Admin Overview',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 10),
+                const Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "  Recent Activity",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: bookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = bookings[index];
+                      return ListTile(
+                        title: Text(booking.user?.fullname ?? 'Unknown'),
+                        subtitle: Text(booking.status),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
-          } else if (state is UserDataError) {
-            return Center(child: Text(state.message));
           } else {
             return const Center(child: Text('No data available'));
           }
         },
       ),
-    );
-  }
-
-  void showDeleteDialog(BuildContext context, String userId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this user?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              onPressed: () {
-                final bloc = BlocProvider.of<AdminUserBloc>(context);
-                bloc.add(DeleteUser(userId));
-                Navigator.of(context).pop();
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.space_dashboard_outlined),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.person_2),
+            label: 'Users',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.calendar),
+            label: 'Bookings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }

@@ -21,10 +21,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         final User user = await _authRepo.userLogin(event.user);
         emit(AuthSuccessWithRole(user.role));
-        emit(const AuthSucceed('Login Success'));
       } catch (e) {
         emit(AuthFailed(e.toString()));
+        
       }
     });
+        on<AuthReset>((event, emit) => emit(AuthInitial()));
+
   }
 }
